@@ -74,6 +74,8 @@ def sample_metadata(sample):
         sample_metadata["LOCATION"] = result[4]
         sample_metadata["BBTYPE"] = result[5]
         sample_metadata["WFREQ"] = result[6]
+
+    print(sample_metadata)
     return jsonify(sample_metadata)
 
 @app.route("/samples/<sample>")
@@ -84,47 +86,44 @@ def samples(sample):
 
     # Filter the data based on the sample number and  # only keep rows with values above 1
     sample_data = df.loc[df[sample] > 1, ["otu_id", "otu_label", sample]]
-    
+
+
     # Sort by descending
-    sample_data = sample_data.sort_values(by=sample, ascending=0)
+    #sample_data = sample_data.sort_values(by=sample, ascending=0)
+    # Sort by sample
+    sample_data.sort_values(by=sample, ascending=False, inplace=True)
 
     # Prepare Data for graphing in front end.
     data = {
         "otu_ids": sample_data.otu_id.values.tolist(),
         "sample_values": sample_data[sample].values.tolist(),
         "otu_labels": sample_data.otu_label.tolist()
-    }    
+    }
+    #print("sample data going to jsonify", data) 
+   
     return jsonify(data)
-
-@app.route("/samples10/<sample>")
-def samples10(sample):
-
-    # Return otu_ids, otu_labels,and sample_values
-    stmt = db.session.query(Samples).statement
-    df = pd.read_sql_query(stmt, db.session.bind)
-
-    # Filter the data based on the sample number and  # only keep rows with values above 1
-    sample_data = df.loc[df[sample] > 1, ["otu_id","otu_label", sample]]
-
-    sample_ten = sample_data.loc[:, ['otu_id', sample]].sort_values(sample, ascending=False)
-    sample_ten = sample_ten.astype(int)
-
-    # Slice for top ten and json for 
-    otu_ids_sorted = list(sample_ten.iloc[:10, 0])
-    otu_labels_sorted = list(sample_ten.iloc[:10, 1])
-
-    #samples_sorted = list(sample_ten.iloc[:10, 2])
-    #print("sample sorted", samples_sorted)    
-
-    # Prepare Data for graphing in front end.
-    data10 = {
-            
-        "otu_ids": otu_ids_sorted,#.index.values.tolist(),
-        "sample_values": otu_labels_sorted,#.values.tolist(),
-       # "otu_labels": samples_sorted#.values.tolist()
-    }    
-    return jsonify(data10)
-
-
 if __name__ == "__main__":
     app.run()
+
+#@app.route("/samples10/<sample>")
+#def samples10(sample):
+#   Return otu_ids, otu_labels,and sample_values
+#    stmt = db.session.query(Samples).statement
+#   df = pd.read_sql_query(stmt, db.session.bind)
+#   Filter the data based on the sample number and  # only keep rows with values above 1
+#    sample_data = df.loc[df[sample] > 1, ["otu_id", sample]]
+#    sample_ten = sample_data.loc[:, ['otu_id', sample]].sort_values(sample, ascending=False)
+#   sample_ten = sample_ten.astype(int)
+#   Slice for top ten and json for 
+#   otu_ids_sorted = list(sample_ten.iloc[:10, 0])
+#   otu_labels_sorted = list(sample_ten.iloc[:10, 1])
+#   samples_sorted = list(sample_ten.iloc[:10, 2])#
+#     #print("sample sorted", samples_sorted)    
+#   Prepare Data for graphing in front end.
+#   data10 = {
+#       "otu_ids": otu_ids_sorted,#.index.values.tolist(),
+#       "sample_values": otu_labels_sorted,#.values.tolist(),
+#       # "otu_labels": samples_sorted#.values.tolist()
+#  }    
+#   return jsonify(data10)
+
